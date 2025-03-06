@@ -2,6 +2,7 @@ import streamlit as st
 from utils.file_utils import handle_file_upload
 from assistant.workflow_builder import build_workflow
 from assistant.email_generator import generate_cover_letter_and_email
+from utils.file_converter import generate_pdf, generate_docx  # Import conversion functions
 
 # Configure the page
 st.set_page_config(page_title="AI Resume Assistant", layout="wide")
@@ -152,15 +153,38 @@ if resume_file and job_desc_file:
 
         # Display ATS-friendly resume
         st.markdown("<div class='section-header'>ATS-Friendly Resume</div>", unsafe_allow_html=True)
-        st.text_area("", final_state.get("updated_resume", "No updated resume available"), height=300, key="ats_resume")
+        final_resume = final_state.get("updated_resume", "No updated resume available")
+        st.text_area("", final_resume, height=300, key="ats_resume")
 
         # Generate cover letter and cold email
         st.markdown("<div class='section-header'>Cover Letter & Cold Email</div>", unsafe_allow_html=True)
-        generated_content = generate_cover_letter_and_email(final_state.get("updated_resume", ""), job_desc_text)
+        generated_content = generate_cover_letter_and_email(final_resume, job_desc_text)
         st.markdown("<div class='content-box'><strong>Cover Letter:</strong></div>", unsafe_allow_html=True)
         st.text_area("", generated_content['cover_letter'], height=300, key="cover_letter")
         st.markdown("<div class='content-box'><strong>Cold Email:</strong></div>", unsafe_allow_html=True)
         st.text_area("", generated_content['cold_email'], height=300, key="cold_email")
+
+        # Add conversion buttons to download final resume as PDF or DOCX
+        st.markdown("<div class='section-header'>Download Your Final Resume</div>", unsafe_allow_html=True)
+        col_pdf, col_docx = st.columns(2)
+        with col_pdf:
+            if st.button("Convert to PDF"):
+                pdf_file = generate_pdf(final_resume)
+                st.download_button(
+                    label="Download PDF",
+                    data=pdf_file,
+                    file_name="resume.pdf",
+                    mime="application/pdf"
+                )
+        with col_docx:
+            if st.button("Convert to DOCX"):
+                docx_file = generate_docx(final_resume)
+                st.download_button(
+                    label="Download DOCX",
+                    data=docx_file,
+                    file_name="resume.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
 
         # Feedback section in the sidebar
         st.sidebar.markdown("<div class='section-header'>Feedback</div>", unsafe_allow_html=True)
