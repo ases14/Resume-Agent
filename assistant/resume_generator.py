@@ -1,7 +1,13 @@
 from langchain_groq import ChatGroq
 import os
+from dotenv import load_dotenv  # To load variables from .env file
 
-llm = ChatGroq(temperature=0, groq_api_key=os.getenv("GROQ_API_KEY"), model_name="llama-3.3-70b-versatile")
+# Load variables from .env
+load_dotenv()
+
+# Fetch the API key from environment variables
+api_key = os.getenv("GROQ_API_KEY")
+llm = ChatGroq(temperature=0, groq_api_key=api_key, model_name="llama-3.3-70b-versatile")
 
 
 def generate_ats_friendly_resume(resume_text: str, job_desc_text: str) -> str:
